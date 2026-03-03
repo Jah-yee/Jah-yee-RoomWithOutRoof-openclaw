@@ -38,9 +38,8 @@ export function stripInlineStatus(body: string): {
   if (!trimmed) {
     return { cleaned: "", didStrip: false };
   }
-  const cleaned = trimmed.replace(INLINE_STATUS_RE, " ").replace(/[^\S\n]+/g, " ").trim();
-  // Use [^\S\n]+ instead of \s+ to only collapse horizontal whitespace,
-  // preserving newlines so multi-line messages keep their paragraph structure.
-  const cleaned = collapseInlineHorizontalWhitespace(trimmed.replace(INLINE_STATUS_RE, " ")).trim();
+  const cleaned = collapseInlineHorizontalWhitespace(
+    trimmed.replace(INLINE_STATUS_RE, " ").replace(/[^\S\n]+/g, " "),
+  ).trim();
   return { cleaned, didStrip: cleaned !== trimmed };
 }
