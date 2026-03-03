@@ -6,6 +6,11 @@ import { sendMediaFeishu } from "./media.js";
 import { getFeishuRuntime } from "./runtime.js";
 import { sendMarkdownCardFeishu, sendMessageFeishu } from "./send.js";
 
+// Central hook for presenting user-facing text in Feishu.
+// This keeps agent/tool behavior channel-agnostic while allowing the Feishu
+// adapter to shape errors for IM users (human summary + technical details).
+// Other channels (e.g. WeCom/Discord) can adopt the same pattern by adding
+// their own format<UserFacingText> helper at their outbound boundary.
 function formatFeishuUserFacingText(text: string): string {
   const trimmed = text.trim();
   if (!trimmed) return text;
@@ -16,8 +21,8 @@ function formatFeishuUserFacingText(text: string): string {
     const agentLine = agentLineMatch[0];
     const isSessionLock = /session file locked/i.test(agentLine);
     const userLine = isSessionLock
-      ? "(**Session file lock error. Please wait a moment and resend your last message.**)"
-      : "(**Agent failed before replying. Please retry your last message.**)";
+      ? "**Session file lock error. This is usually temporary; please wait a few minutes and resend your last message. If it keeps happening, ask the operator to check the OpenClaw logs.**"
+      : "**The agent failed before replying. This is often a transient issue; please retry your last message shortly. If the problem persists, contact the operator or check the OpenClaw troubleshooting docs.**";
     const technicalLine = `\`\`\`Technical details: ${agentLine}\`\`\``;
     return `${userLine}\n${technicalLine}`;
   }
@@ -27,7 +32,7 @@ function formatFeishuUserFacingText(text: string): string {
   if (execLineMatch) {
     const execLine = execLineMatch[0];
     const userLine =
-      "(**Command execution failed. Please verify this command on the host or ask the operator to review it.**)";
+      "**Command execution failed. This usually means the host command or environment is misconfigured; please verify the command locally or ask the operator to review the OpenClaw gateway configuration.**";
     const technicalLine = `\`\`\`Technical details: ${execLine}\`\`\``;
     return `${userLine}\n${technicalLine}`;
   }
@@ -36,7 +41,7 @@ function formatFeishuUserFacingText(text: string): string {
   if (trimmed.includes("⚠️")) {
     const firstLine = trimmed.split(/\r?\n/, 1)[0];
     const userLine =
-      "(**An error occurred while handling your request. Please try again or contact the operator if this keeps happening.**)";
+      "**Something went wrong while handling your request. This is often temporary; please try again in a few minutes, and contact the operator or check the OpenClaw docs if it keeps happening.**";
     const technicalLine = `\`\`\`Technical details: ${firstLine}\`\`\``;
     return `${userLine}\n${technicalLine}`;
   }
@@ -135,11 +140,10 @@ export const feishuOutbound: ChannelOutboundAdapter = {
   sendMedia: async ({ cfg, to, text, mediaUrl, accountId, mediaLocalRoots }) => {
     // Send text first if provided
     if (text?.trim()) {
-      const formattedText = formatFeishuUserFacingText(text);
       await sendOutboundText({
         cfg,
         to,
-        text: formattedText,
+        text,
         accountId: accountId ?? undefined,
       });
     }

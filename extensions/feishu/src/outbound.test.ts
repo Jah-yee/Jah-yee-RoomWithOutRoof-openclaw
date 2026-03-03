@@ -148,7 +148,7 @@ describe("feishuOutbound.sendText local-image auto-convert", () => {
     expect(sendMarkdownCardFeishuMock).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "chat_1",
-        text: "(**Session file lock error. Please wait a moment and resend your last message.**)\n```Technical details: ⚠️ Agent failed before reply: session file locked (timeout 10000ms): pid=123 /path.lock```",
+        text: "**Session file lock error. This is usually temporary; please wait a few minutes and resend your last message. If it keeps happening, ask the operator to check the OpenClaw logs.**\n```Technical details: ⚠️ Agent failed before reply: session file locked (timeout 10000ms): pid=123 /path.lock```",
         accountId: "main",
       }),
     );
@@ -166,7 +166,7 @@ describe("feishuOutbound.sendText local-image auto-convert", () => {
     expect(sendMarkdownCardFeishuMock).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "chat_1",
-        text: "(**Command execution failed. Please verify this command on the host or ask the operator to review it.**)\n```Technical details: ⚠️ 🛠️ Exec: vercel env add VITE_API_URL production --token=secret 2>&1 << 'EOF' failed: Vercel CLI 50.23.2```",
+        text: "**Command execution failed. This usually means the host command or environment is misconfigured; please verify the command locally or ask the operator to review the OpenClaw gateway configuration.**\n```Technical details: ⚠️ 🛠️ Exec: vercel env add VITE_API_URL production --token=secret 2>&1 << 'EOF' failed: Vercel CLI 50.23.2```",
         accountId: "main",
       }),
     );
@@ -184,7 +184,25 @@ describe("feishuOutbound.sendText local-image auto-convert", () => {
     expect(sendMarkdownCardFeishuMock).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "chat_1",
-        text: "(**An error occurred while handling your request. Please try again or contact the operator if this keeps happening.**)\n```Technical details: ⚠️ Model run failed: internal error```",
+        text: "**Something went wrong while handling your request. This is often temporary; please try again in a few minutes, and contact the operator or check the OpenClaw docs if it keeps happening.**\n```Technical details: ⚠️ Model run failed: internal error```",
+        accountId: "main",
+      }),
+    );
+    expect(sendMessageFeishuMock).not.toHaveBeenCalled();
+  });
+
+  it("formats non-session-lock agent-before-reply errors with generic summary", async () => {
+    await sendText({
+      cfg: {} as any,
+      to: "chat_1",
+      text: "⚠️ Agent failed before reply: context window exceeded",
+      accountId: "main",
+    });
+
+    expect(sendMarkdownCardFeishuMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "chat_1",
+        text: "**The agent failed before replying. This is often a transient issue; please retry your last message shortly. If the problem persists, contact the operator or check the OpenClaw troubleshooting docs.**\n```Technical details: ⚠️ Agent failed before reply: context window exceeded```",
         accountId: "main",
       }),
     );
