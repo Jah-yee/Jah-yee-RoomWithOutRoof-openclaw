@@ -84,3 +84,18 @@ Use this format when adding entries:
   npm: `@openclaw/kudosity-sms`
   repo: `https://github.com/openclaw/extensions/tree/main/extensions/kudosity-sms`
   install: `openclaw plugins install @openclaw/kudosity-sms`
+
+- **VibeClaw** — Zero-config skill discovery via Vibe Index (93,600+ skills, plugins, and MCP servers). Auto-searches, security-checks, and installs skills when the agent encounters unknown tasks.
+  npm: `vibeclaw`
+  repo: `https://github.com/taehojo/vibeclaw`
+  install: `openclaw plugins install vibeclaw`
+
+- **Canvas LMS** — Integration with Canvas LMS (learning management system). Sync courses, assignments, and grades.
+  npm: `@kansodata/openclaw-canvas-lms`
+  repo: `https://github.com/Kansodata/openclaw-canvas-lms`
+  install: `openclaw plugins install @kansodata/openclaw-canvas-lms`
+
+- **TokenRanger** — Compresses session context via local Ollama SLM before sending to cloud LLMs. 50-80% token reduction with graceful fallback.
+  npm: `openclaw-plugin-tokenranger`
+  repo: `https://github.com/peterjohannmedina/openclaw-plugin-tokenranger`
+  install: `openclaw plugins install openclaw-plugin-tokenranger`
