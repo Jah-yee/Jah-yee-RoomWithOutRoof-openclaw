@@ -64,3 +64,8 @@ Use this format when adding entries:
   npm: `@comet/opik`
   repo: `https://github.com/comet-ml/opik`
   install: `openclaw plugins install @comet/opik`
+
+- **Claude Code** — Claude Code integration for OpenClaw. Enables running Claude Code agents within OpenClaw.
+  npm: `openclaw-claude-code`
+  repo: `https://github.com/Phoenizard/openclaw-claude-code`
+  install: `openclaw plugins install openclaw-claude-code`
