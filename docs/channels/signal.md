@@ -179,8 +179,6 @@ If you want to manage `signal-cli` yourself (slow JVM cold starts, container ini
 
 This skips auto-spawn and the startup wait inside OpenClaw. For slow starts when auto-spawning, set `channels.signal.startupTimeoutMs`.
 
-
-
 ## Recommended configuration for personal use
 
 For a single user running OpenClaw as a personal assistant over Signal DMs:
@@ -219,7 +217,6 @@ For a single user running OpenClaw as a personal assistant over Signal DMs:
 - `blockStreaming`: Sends completed chunks immediately instead of waiting for the full response
 - `blockStreamingCoalesce`: Groups short chunks together to avoid flooding the chat
 - `humanDelay`: Adds a small delay between chunks (300ms is a good default)
-
 
 ## Access control (DMs + groups)
 
