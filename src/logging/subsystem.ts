@@ -75,7 +75,7 @@ function isRichConsoleEnv(): boolean {
   return term.length > 0 && term !== "dumb";
 }
 
-function getColorForConsole(): ChalkInstance {
+function getCachedChalk(): ChalkInstance {
   const hasForceColor =
     typeof process.env.FORCE_COLOR === "string" &&
     process.env.FORCE_COLOR.trim().length > 0 &&
@@ -85,6 +85,15 @@ function getColorForConsole(): ChalkInstance {
   }
   const hasTty = Boolean(process.stdout.isTTY || process.stderr.isTTY);
   return hasTty || isRichConsoleEnv() ? new Chalk({ level: 1 }) : new Chalk({ level: 0 });
+}
+
+// Cache the Chalk instance - environment doesn't change during process lifetime
+let cachedChalkInstance: ChalkInstance | undefined;
+function getCachedChalk(): ChalkInstance {
+  if (!cachedChalkInstance) {
+    cachedChalkInstance = getCachedChalk();
+  }
+  return cachedChalkInstance;
 }
 
 const SUBSYSTEM_COLORS = ["cyan", "green", "yellow", "blue", "magenta", "red"] as const;
@@ -204,7 +213,7 @@ function formatConsoleLine(opts: {
       ...opts.meta,
     });
   }
-  const color = getColorForConsole();
+  const color = getCachedChalk();
   const prefix = `[${displaySubsystem}]`;
   const prefixColor = pickSubsystemColor(color, displaySubsystem);
   const levelColor =
