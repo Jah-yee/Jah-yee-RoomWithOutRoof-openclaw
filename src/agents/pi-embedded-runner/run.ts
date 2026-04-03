@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import fs from "node:fs/promises";
 import type { ThinkLevel } from "../../auto-reply/thinking.js";
+import { resolveSessionKeyForRequest } from "../command/session.js";
 import {
   ensureContextEnginesInitialized,
   resolveContextEngine,
@@ -100,7 +101,17 @@ type ApiKeyInfo = ResolvedProviderAuth;
 export async function runEmbeddedPiAgent(
   params: RunEmbeddedPiAgentParams,
 ): Promise<EmbeddedPiRunResult> {
-  const sessionLane = resolveSessionLane(params.sessionKey?.trim() || params.sessionId);
+  // Backfill sessionKey from sessionId when not explicitly provided
+  const resolvedSessionKey = params.sessionKey?.trim()
+    ? params.sessionKey
+    : params.sessionId && params.config
+      ? resolveSessionKeyForRequest({
+          cfg: params.config,
+          sessionId: params.sessionId,
+        }).sessionKey
+      : undefined;
+
+  const sessionLane = resolveSessionLane(resolvedSessionKey?.trim() || params.sessionId);
   const globalLane = resolveGlobalLane(params.lane);
   const enqueueGlobal =
     params.enqueue ?? ((task, opts) => enqueueCommandInLane(globalLane, task, opts));
