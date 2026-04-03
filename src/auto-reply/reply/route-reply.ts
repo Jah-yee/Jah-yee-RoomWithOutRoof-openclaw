@@ -19,6 +19,7 @@ import type { OriginatingChannelType } from "../templating.js";
 import type { ReplyPayload } from "../types.js";
 import { normalizeReplyPayload } from "./normalize-reply.js";
 import {
+  applyReplyTagsToPayload,
   formatBtwTextForExternalDelivery,
   shouldSuppressReasoningPayload,
 } from "./reply-payloads.js";
@@ -99,7 +100,10 @@ export async function routeReply(params: RouteReplyParams): Promise<RouteReplyRe
     : cfg.messages?.responsePrefix === "auto"
       ? undefined
       : cfg.messages?.responsePrefix;
-  const normalized = normalizeReplyPayload(payload, {
+  // Apply reply tag parsing (e.g., [[reply_to_current]]) before normalization.
+  // This ensures routed replies go through the same processing as the normal reply path.
+  const payloadWithReplyTags = applyReplyTagsToPayload(payload);
+  const normalized = normalizeReplyPayload(payloadWithReplyTags, {
     responsePrefix,
   });
   if (!normalized) {
