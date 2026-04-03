@@ -18,7 +18,8 @@ import type {
   MediaUnderstandingConfig,
   MediaUnderstandingModelConfig,
 } from "../config/types.tools.js";
-import { logVerbose, shouldLogVerbose } from "../globals.js";
+import { logVerbose, shouldLogVerbose, danger } from "../globals.js";
+import { getLogger } from "../logging/logger.js";
 import {
   mergeInboundPathRoots,
   resolveIMessageAttachmentRoots,
@@ -634,8 +635,11 @@ async function runAttachmentEntries(params: {
             reason: `${err.reason}: ${err.message}`,
           }),
         );
-        if (shouldLogVerbose()) {
-          logVerbose(`Skipping ${capability} model due to ${err.reason}: ${err.message}`);
+        const skipMsg = `Skipping ${capability} model due to ${err.reason}: ${err.message}`;
+        try {
+          getLogger().warn({ message: skipMsg }, "media-skip");
+        } catch {
+          console.error(danger(skipMsg));
         }
         continue;
       }
@@ -647,8 +651,11 @@ async function runAttachmentEntries(params: {
           reason: String(err),
         }),
       );
-      if (shouldLogVerbose()) {
-        logVerbose(`${capability} understanding failed: ${String(err)}`);
+      const failMsg = `${capability} understanding failed: ${String(err)}`;
+      try {
+        getLogger().warn({ message: failMsg }, "media-fail");
+      } catch {
+        console.error(danger(failMsg));
       }
     }
   }
