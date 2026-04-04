@@ -28,6 +28,9 @@ const SCANNED_DIRECTORY_IGNORE_NAMES = new Set([
   "coverage",
   "dist",
   "node_modules",
+  ".venv",
+  "venv",
+  "env",
 ]);
 
 export type PluginCandidate = {

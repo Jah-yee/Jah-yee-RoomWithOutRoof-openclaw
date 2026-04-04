@@ -414,8 +414,13 @@ export function loadPluginManifestRegistry(
             })
           : loadPluginManifest(candidate.rootDir, rejectHardlinks);
     if (!manifestRes.ok) {
+      // Downgrade to warn for workspace origin since workspace discovery is opportunistic
+      // (any file matching extension patterns) and a missing manifest just means it's not a plugin
+      const isWorkspaceMissingManifest =
+        candidate.origin === "workspace" &&
+        manifestRes.error.includes("plugin manifest not found");
       diagnostics.push({
-        level: "error",
+        level: isWorkspaceMissingManifest ? "warn" : "error",
         message: manifestRes.error,
         source: manifestRes.manifestPath,
       });
