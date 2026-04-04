@@ -138,6 +138,23 @@ export async function resolveSharedMemoryStatusSnapshot(params: {
     return null;
   }
   const agentId = agentStatus.defaultId ?? "main";
+
+  // For third-party memory plugins (not memory-core), skip built-in config checks
+  // and directly query the plugin's memory search manager
+  if (memoryPlugin.slot !== "memory-core") {
+    const { manager } = await params.getMemorySearchManager({ cfg, agentId, purpose: "status" });
+    if (!manager) {
+      return null;
+    }
+    try {
+      await manager.probeVectorAvailability();
+    } catch {}
+    const status = manager.status();
+    await manager.close?.().catch(() => {});
+    return { agentId, ...status };
+  }
+
+  // For memory-core, use existing built-in config checks
   const defaultStorePath = params.requireDefaultStore?.(agentId);
   if (
     defaultStorePath &&

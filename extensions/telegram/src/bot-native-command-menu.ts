@@ -11,6 +11,10 @@ import { normalizeTelegramCommandName, TELEGRAM_COMMAND_NAME_PATTERN } from "./c
 
 export const TELEGRAM_MAX_COMMANDS = 100;
 const TELEGRAM_COMMAND_RETRY_RATIO = 0.8;
+/** Telegram undocumented character budget (command names + descriptions combined). */
+const TELEGRAM_COMMAND_CHAR_BUDGET = 5750;
+/** Reduce descriptions to this length before dropping commands. */
+const MIN_DESCRIPTION_LENGTH = 40;
 
 export type TelegramMenuCommand = {
   command: string;
@@ -104,6 +108,38 @@ export function buildPluginTelegramMenuCommands(params: {
   }
 
   return { commands, issues };
+
+  /** Compute total character count (name + description) for all commands. */
+  function computeCommandCharCount(commands: TelegramMenuCommand[]): number {
+    return commands.reduce((sum, cmd) => sum + cmd.command.length + cmd.description.length, 0);
+  }
+
+  /** Truncate descriptions to fit within character budget while preserving as many commands as possible. */
+  function truncateDescriptionsToFit(
+    commands: TelegramMenuCommand[],
+    budget: number,
+  ): TelegramMenuCommand[] {
+    if (commands.length === 0) {
+      return commands;
+    }
+    // Start with full length, progressively truncate (80 chars -> 60 -> 40)
+    const truncationSteps = [80, 60, MIN_DESCRIPTION_LENGTH];
+    let result = [...commands];
+    for (const maxDescLen of truncationSteps) {
+      const truncated = result.map((cmd) => ({
+        command: cmd.command,
+        description:
+          cmd.description.length > maxDescLen
+            ? cmd.description.slice(0, maxDescLen - 1) + "…"
+            : cmd.description,
+      }));
+      if (computeCommandCharCount(truncated) <= budget) {
+        return truncated;
+      }
+    }
+    // Last resort: return as-is (let the count-based retry handle it)
+    return result;
+  }
 }
 
 export function buildCappedTelegramMenuCommands(params: {
@@ -119,7 +155,8 @@ export function buildCappedTelegramMenuCommands(params: {
   const maxCommands = params.maxCommands ?? TELEGRAM_MAX_COMMANDS;
   const totalCommands = allCommands.length;
   const overflowCount = Math.max(0, totalCommands - maxCommands);
-  const commandsToRegister = allCommands.slice(0, maxCommands);
+  let commandsToRegister = allCommands.slice(0, maxCommands);
+  commandsToRegister = truncateDescriptionsToFit(commandsToRegister, TELEGRAM_COMMAND_CHAR_BUDGET);
   return { commandsToRegister, totalCommands, maxCommands, overflowCount };
 }
 
@@ -247,7 +284,14 @@ export function syncTelegramMenuCommands(params: {
         runtime.log?.(
           `Telegram rejected ${retryCommands.length} commands (BOT_COMMANDS_TOO_MUCH); retrying with ${reducedCount}.`,
         );
-        retryCommands = retryCommands.slice(0, reducedCount);
+        const truncatedCommands = truncateDescriptionsToFit(
+          retryCommands,
+          TELEGRAM_COMMAND_CHAR_BUDGET,
+        );
+        retryCommands =
+          truncatedCommands.length < retryCommands.length
+            ? truncatedCommands
+            : retryCommands.slice(0, reducedCount);
       }
     }
   };
