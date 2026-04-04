@@ -170,8 +170,11 @@ export function loadPluginManifestRegistry(params: {
     const rejectHardlinks = candidate.origin !== "bundled";
     const manifestRes = loadPluginManifest(candidate.rootDir, rejectHardlinks);
     if (!manifestRes.ok) {
+      // For workspace-origin candidates, a missing manifest is expected since workspace
+      // discovery is opportunistic (any file matching extension patterns). Downgrade to warn.
+      const level = candidate.origin === "workspace" ? "warn" : "error";
       diagnostics.push({
-        level: "error",
+        level,
         message: manifestRes.error,
         source: manifestRes.manifestPath,
       });

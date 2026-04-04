@@ -208,6 +208,17 @@ function isExtensionFile(filePath: string): boolean {
   return !filePath.endsWith(".d.ts");
 }
 
+const SCANNED_DIRECTORY_IGNORE_NAMES = new Set([
+  ".venv",
+  "venv",
+  "virtualenv",
+  ".env",
+  "env",
+  ".tox",
+  "node_modules",
+  ".git",
+]);
+
 function shouldIgnoreScannedDirectory(dirName: string): boolean {
   const normalized = dirName.trim().toLowerCase();
   if (!normalized) {
@@ -220,6 +231,9 @@ function shouldIgnoreScannedDirectory(dirName: string): boolean {
     return true;
   }
   if (normalized.includes(".disabled")) {
+    return true;
+  }
+  if (SCANNED_DIRECTORY_IGNORE_NAMES.has(normalized)) {
     return true;
   }
   return false;
