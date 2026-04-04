@@ -130,8 +130,20 @@ async function resolveMemoryStatusSnapshot(params: {
   if (!memoryPlugin.enabled) {
     return null;
   }
+  // For third-party plugins (not memory-core), try to get status via plugin manager
   if (memoryPlugin.slot !== "memory-core") {
-    return null;
+    const agentId = agentStatus.defaultId ?? "main";
+    const { manager } = await getMemorySearchManager({ cfg, agentId, purpose: "status" });
+    if (manager) {
+      try {
+        await manager.probeVectorAvailability();
+      } catch {}
+      const status = manager.status();
+      await manager.close?.().catch(() => {});
+      return { agentId, ...status };
+    }
+    // If manager unavailable, still return basic status
+    return { agentId, files: 0, chunks: 0, vectorOk: false, ftsOk: false };
   }
   const agentId = agentStatus.defaultId ?? "main";
   const { manager } = await getMemorySearchManager({ cfg, agentId, purpose: "status" });
