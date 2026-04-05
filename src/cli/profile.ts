@@ -83,7 +83,9 @@ function resolveProfileStateDir(
   env: Record<string, string | undefined>,
   homedir: () => string,
 ): string {
-  const suffix = profile.toLowerCase() === "default" ? "" : `-${profile}`;
+  // Treat "default" and "openclaw" as the default profile (no suffix).
+  const isDefault = profile.toLowerCase() === "default" || profile.toLowerCase() === "openclaw";
+  const suffix = isDefault ? "" : `-${profile}`;
   return path.join(resolveRequiredHomeDir(env as NodeJS.ProcessEnv, homedir), `.openclaw${suffix}`);
 }
 
