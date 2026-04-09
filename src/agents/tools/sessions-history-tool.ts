@@ -263,6 +263,8 @@ export function createSessionsHistoryTool(opts?: {
       return jsonResult({
         sessionKey: displayKey,
         messages: hardened.items,
+        model: result.model,
+        provider: result.provider,
         truncated: droppedMessages || contentTruncated || hardened.hardCapped,
         droppedMessages: droppedMessages || hardened.hardCapped,
         contentTruncated,
