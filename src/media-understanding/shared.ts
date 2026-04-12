@@ -121,6 +121,18 @@ export async function postTranscriptionRequest(params: {
   dispatcherPolicy?: PinnedDispatcherPolicy;
   auditContext?: string;
 }) {
+  // pinDns: false required - pinned DNS dispatcher corrupts FormData multipart bodies,
+  // breaking transcription (GitHub issue #64762)
+  const ssrfGuard =
+    params.allowPrivateNetwork || params.dispatcherPolicy
+      ? {
+          ...(params.allowPrivateNetwork ? { ssrfPolicy: { allowPrivateNetwork: true } } : {}),
+          ...(params.dispatcherPolicy
+            ? { dispatcherPolicy: params.dispatcherPolicy, pinDns: false }
+            : {}),
+          ...(params.auditContext ? { auditContext: params.auditContext } : {}),
+        }
+      : undefined;
   return fetchWithTimeoutGuarded(
     params.url,
     {
@@ -130,13 +142,7 @@ export async function postTranscriptionRequest(params: {
     },
     params.timeoutMs,
     params.fetchFn,
-    params.allowPrivateNetwork || params.dispatcherPolicy
-      ? {
-          ...(params.allowPrivateNetwork ? { ssrfPolicy: { allowPrivateNetwork: true } } : {}),
-          ...(params.dispatcherPolicy ? { dispatcherPolicy: params.dispatcherPolicy } : {}),
-          ...(params.auditContext ? { auditContext: params.auditContext } : {}),
-        }
-      : undefined,
+    ssrfGuard,
   );
 }
 
