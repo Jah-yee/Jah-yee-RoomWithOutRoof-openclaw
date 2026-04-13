@@ -163,6 +163,15 @@ Accounts map to `zalouser` profiles in OpenClaw state. Example:
 }
 ```
 
+### Profile environment overrides
+
+`zalouser` also supports profile selection through environment variables:
+
+- `ZALOUSER_PROFILE`: preferred profile override for the active account.
+- `ZCA_PROFILE`: fallback profile override used when `ZALOUSER_PROFILE` is not set.
+
+Resolution order is: account config `profile` -> `ZALOUSER_PROFILE` -> `ZCA_PROFILE` -> account id/default.
+
 ## Typing, reactions, and delivery acknowledgements
 
 - OpenClaw sends a typing event before dispatching a reply (best-effort).
