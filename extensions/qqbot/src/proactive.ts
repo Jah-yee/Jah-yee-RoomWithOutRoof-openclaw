@@ -15,6 +15,7 @@ import {
   sendProactiveGroupMessage,
 } from "./api.js";
 import { resolveDefaultQQBotAccountId, resolveQQBotAccount } from "./config.js";
+import { QQBOT_CONFIG_MISSING_MESSAGE, withQQBotSetupDocs } from "./errors.js";
 import {
   clearKnownUsers as clearKnownUsersImpl,
   getKnownUser as getKnownUserImpl,
@@ -111,8 +112,7 @@ export async function sendProactive(
   if (!account.appId || !account.clientSecret) {
     return {
       success: false,
-      error:
-        "QQBot not configured. Set QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot",
+      error: withQQBotSetupDocs(QQBOT_CONFIG_MISSING_MESSAGE),
     };
   }
 
@@ -283,8 +283,7 @@ export async function sendProactiveMessageDirect(
   if (!account.appId || !account.clientSecret) {
     return {
       success: false,
-      error:
-        "QQBot not configured. Set QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot",
+      error: withQQBotSetupDocs(QQBOT_CONFIG_MISSING_MESSAGE),
     };
   }
 

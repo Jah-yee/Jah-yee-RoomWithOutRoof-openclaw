@@ -18,6 +18,7 @@ import {
   stopBackgroundTokenRefresh,
 } from "./api.js";
 import { formatQQBotAllowFrom } from "./channel-config-shared.js";
+import { QQBOT_CONFIG_MISSING_MESSAGE, withQQBotSetupDocs } from "./errors.js";
 import { formatVoiceText, processAttachments } from "./inbound-attachments.js";
 import { flushKnownUsers, recordKnownUser } from "./known-users.js";
 import { createMessageQueue, type QueuedMessage } from "./message-queue.js";
@@ -125,9 +126,7 @@ export async function startGateway(ctx: GatewayContext): Promise<void> {
   const { account, abortSignal, cfg, onReady, onError, log } = ctx;
 
   if (!account.appId || !account.clientSecret) {
-    throw new Error(
-      "QQBot not configured. Set QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot",
-    );
+    throw new Error(withQQBotSetupDocs(QQBOT_CONFIG_MISSING_MESSAGE));
   }
 
   // Run environment diagnostics during startup.

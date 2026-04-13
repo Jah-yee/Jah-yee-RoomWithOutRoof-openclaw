@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import { formatErrorMessage } from "openclaw/plugin-sdk/error-runtime";
 import { normalizeOptionalString } from "openclaw/plugin-sdk/text-runtime";
+import { QQBOT_SETUP_DOCS_URL } from "./errors.js";
 import { debugLog, debugError } from "./utils/debug-log.js";
 import { sanitizeFileName } from "./utils/platform.js";
 import { computeFileHash, getCachedFileInfo, setCachedFileInfo } from "./utils/upload-cache.js";
@@ -137,7 +138,7 @@ async function doFetchToken(appId: string, clientSecret: string): Promise<string
 
   if (!data.access_token) {
     throw new Error(
-      `Failed to get access_token. Check QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot. API response: ${JSON.stringify(data)}`,
+      `Failed to get access_token. Check QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See ${QQBOT_SETUP_DOCS_URL}. API response: ${JSON.stringify(data)}`,
     );
   }
 
@@ -245,7 +246,7 @@ export async function apiRequest<T = unknown>(
     }
     debugError(`[qqbot-api] <<< Network error:`, err);
     throw new Error(
-      `Network error [${path}]: ${formatErrorMessage(err)}. Check connectivity and QQ platform access. See https://docs.openclaw.ai/channels/qqbot`,
+      `Network error [${path}]: ${formatErrorMessage(err)}. Check connectivity and QQ platform access. See ${QQBOT_SETUP_DOCS_URL}`,
       { cause: err },
     );
   } finally {

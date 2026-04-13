@@ -22,6 +22,7 @@ import {
   sendProactiveC2CMessage,
   sendProactiveGroupMessage,
 } from "./api.js";
+import { QQBOT_CONFIG_MISSING_MESSAGE, withQQBotSetupDocs } from "./errors.js";
 import type { ResolvedQQBotAccount } from "./types.js";
 import {
   audioFileToSilkBase64,
@@ -265,9 +266,7 @@ function buildMediaTarget(
 /** Resolve an authenticated access token for the account. */
 async function getToken(account: ResolvedQQBotAccount): Promise<string> {
   if (!account.appId || !account.clientSecret) {
-    throw new Error(
-      "QQBot not configured. Set QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot",
-    );
+    throw new Error(withQQBotSetupDocs(QQBOT_CONFIG_MISSING_MESSAGE));
   }
   return getAccessToken(account.appId, account.clientSecret);
 }
@@ -1301,8 +1300,7 @@ export async function sendText(ctx: OutboundContext): Promise<OutboundResult> {
   if (!account.appId || !account.clientSecret) {
     return {
       channel: "qqbot",
-      error:
-        "QQBot not configured. Set QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot",
+      error: withQQBotSetupDocs(QQBOT_CONFIG_MISSING_MESSAGE),
     };
   }
 
@@ -1384,8 +1382,7 @@ export async function sendProactiveMessage(
   const timestamp = new Date().toISOString();
 
   if (!account.appId || !account.clientSecret) {
-    const errorMsg =
-      "QQBot not configured. Set QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot";
+    const errorMsg = withQQBotSetupDocs(QQBOT_CONFIG_MISSING_MESSAGE);
     debugError(`[${timestamp}] [qqbot] sendProactiveMessage: ${errorMsg}`);
     return { channel: "qqbot", error: errorMsg };
   }
@@ -1468,8 +1465,7 @@ export async function sendMedia(ctx: MediaOutboundContext): Promise<OutboundResu
   if (!account.appId || !account.clientSecret) {
     return {
       channel: "qqbot",
-      error:
-        "QQBot not configured. Set QQBOT_APP_ID and QQBOT_CLIENT_SECRET. See https://docs.openclaw.ai/channels/qqbot",
+      error: withQQBotSetupDocs(QQBOT_CONFIG_MISSING_MESSAGE),
     };
   }
   if (!ctx.mediaUrl) {
